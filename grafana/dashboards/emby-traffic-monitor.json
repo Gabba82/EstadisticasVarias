@@ -1,0 +1,84 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 2, "unit": "decgbytes"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum(increase(container_network_transmit_bytes_total{name=~\"$container_regex\"}[$__range])) / 1024 / 1024 / 1024", "legendFormat": "GB enviados", "range": true, "refId": "A"}],
+      "title": "Emby - GB enviados en el rango",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 2, "unit": "decgbytes"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum(increase(container_network_receive_bytes_total{name=~\"$container_regex\"}[$__range])) / 1024 / 1024 / 1024", "legendFormat": "GB recibidos", "range": true, "refId": "A"}],
+      "title": "Emby - GB recibidos en el rango",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 2, "unit": "bytes"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum(container_memory_usage_bytes{name=~\"$container_regex\"})", "legendFormat": "RAM Emby", "range": true, "refId": "A"}],
+      "title": "Emby - RAM actual",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 2, "unit": "none"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\"$container_regex\"}[5m]))", "legendFormat": "CPU Emby", "range": true, "refId": "A"}],
+      "title": "Emby - CPU actual (cores)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "lineInterpolation": "linear", "barAlignment": 0, "lineWidth": 1, "fillOpacity": 8, "gradientMode": "none", "spanNulls": false, "insertNulls": false, "showPoints": "never", "pointSize": 5, "stacking": {"mode": "none", "group": "A"}, "axisPlacement": "auto", "axisLabel": "", "axisColorMode": "text", "scaleDistribution": {"type": "linear"}, "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "thresholdsStyle": {"mode": "off"}}, "unit": "Bps", "decimals": 2}, "overrides": []},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 6},
+      "id": 5,
+      "options": {"legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum(rate(container_network_transmit_bytes_total{name=~\"$container_regex\"}[5m]))", "legendFormat": "Salida", "range": true, "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum(rate(container_network_receive_bytes_total{name=~\"$container_regex\"}[5m]))", "legendFormat": "Entrada", "range": true, "refId": "B"}
+      ],
+      "title": "Emby - Velocidad de red limpia",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["emby", "docker", "cadvisor"],
+  "templating": {"list": [
+    {
+      "current": {"selected": true, "text": ".*emby.*", "value": ".*emby.*"},
+      "hide": 0,
+      "label": "Container regex",
+      "name": "container_regex",
+      "options": [{"selected": true, "text": ".*emby.*", "value": ".*emby.*"}],
+      "query": ".*emby.*",
+      "type": "textbox"
+    }
+  ]},
+  "time": {"from": "now-24h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Emby Traffic Monitor",
+  "uid": "emby-traffic-monitor",
+  "version": 2,
+  "weekStart": ""
+}
