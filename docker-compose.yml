@@ -1,0 +1,54 @@
+services:
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-latest}
+    container_name: ${PROMETHEUS_CONTAINER_NAME:-observatorio-prometheus}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "${PROMETHEUS_BIND_ADDRESS:-127.0.0.1}:${PROMETHEUS_PORT:-9090}:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/data:/prometheus
+
+  grafana:
+    image: grafana/grafana-oss:${GRAFANA_VERSION:-latest}
+    container_name: ${GRAFANA_CONTAINER_NAME:-observatorio-grafana}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "${GRAFANA_BIND_ADDRESS:-0.0.0.0}:${GRAFANA_PORT:-3030}:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-CambiaEstaPassword}
+      - GF_USERS_DEFAULT_THEME=${GRAFANA_DEFAULT_THEME:-dark}
+      - GF_SERVER_ROOT_URL=${GRAFANA_ROOT_URL:-}
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_VERSION:-latest}
+    container_name: ${CADVISOR_CONTAINER_NAME:-observatorio-cadvisor}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "${CADVISOR_BIND_ADDRESS:-127.0.0.1}:${CADVISOR_PORT:-8085}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  node-exporter:
+    image: prom/node-exporter:${NODE_EXPORTER_VERSION:-latest}
+    container_name: ${NODE_EXPORTER_CONTAINER_NAME:-observatorio-node-exporter}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "${NODE_EXPORTER_BIND_ADDRESS:-127.0.0.1}:${NODE_EXPORTER_PORT:-9100}:9100"
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - /:/host:ro,rslave
