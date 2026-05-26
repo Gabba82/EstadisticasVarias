@@ -1,20 +1,20 @@
 # EstadisticasVarias
 
-Docker stack for monitoring home services and devices with Grafana, Prometheus, cAdvisor and Node Exporter.
+Stack Docker para monitorizar servicios, contenedores y dispositivos del hogar con Grafana, Prometheus, cAdvisor y Node Exporter.
 
-The first included module monitors an Emby server and the host that runs it. It is designed for a Linux or CasaOS server where Emby runs in Docker. The default dashboard looks for containers whose name matches `.*emby.*`, but that can be changed from Grafana.
+El primer módulo incluido monitoriza un servidor Emby y el host donde se ejecuta. Está pensado para un servidor Linux o CasaOS con Emby funcionando en Docker. El dashboard busca por defecto contenedores cuyo nombre coincida con `.*emby.*`, pero se puede cambiar desde Grafana.
 
-## What It Includes
+## Qué Incluye
 
-- Grafana on port `3030` by default.
-- Prometheus on port `9090`, bound to localhost by default.
-- cAdvisor on port `8085`, bound to localhost by default.
-- Node Exporter on port `9100`, bound to localhost by default.
-- Provisioned Prometheus datasource in Grafana.
-- Provisioned Emby traffic dashboard.
-- `.env` based configuration for ports, credentials, image tags and retention.
+- Grafana en el puerto `3030` por defecto.
+- Prometheus en el puerto `9090`, ligado a `127.0.0.1` por defecto.
+- cAdvisor en el puerto `8085`, ligado a `127.0.0.1` por defecto.
+- Node Exporter en el puerto `9100`, ligado a `127.0.0.1` por defecto.
+- Datasource de Prometheus autoconfigurado en Grafana.
+- Dashboard de tráfico de Emby autoprovisionado.
+- Configuración mediante `.env` para puertos, credenciales, versiones de imágenes y retención de métricas.
 
-## Structure
+## Estructura
 
 ```text
 EstadisticasVarias/
@@ -38,9 +38,9 @@ EstadisticasVarias/
     `-- fix-permissions.sh
 ```
 
-## Installation
+## Instalación
 
-Clone or copy the project to your server:
+Clona o copia el proyecto en tu servidor:
 
 ```bash
 cd /DATA/AppData
@@ -48,19 +48,19 @@ mkdir -p observatorio
 cd observatorio
 ```
 
-Create your environment file:
+Crea tu archivo de entorno:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and at least change:
+Edita `.env` y cambia al menos la contraseña inicial de Grafana:
 
 ```text
 GRAFANA_ADMIN_PASSWORD=CambiaEstaPassword
 ```
 
-Prepare permissions and start the stack:
+Prepara permisos y arranca el stack:
 
 ```bash
 chmod +x scripts/fix-permissions.sh
@@ -68,61 +68,61 @@ chmod +x scripts/fix-permissions.sh
 docker compose up -d
 ```
 
-Open Grafana:
+Abre Grafana en:
 
 ```text
-http://SERVER-IP:3030
+http://IP-DEL-SERVIDOR:3030
 ```
 
-Default credentials come from `.env`.
+Las credenciales iniciales salen de `.env`.
 
-## Configuration
+## Configuración
 
-Main settings live in `.env`. See [docs/configuration.md](docs/configuration.md).
+La configuración principal vive en `.env`. Puedes ver más detalle en [docs/configuration.md](docs/configuration.md).
 
-The safest default is to expose only Grafana to the LAN. Prometheus, cAdvisor and Node Exporter are bound to `127.0.0.1` unless you change their bind address.
+Por seguridad, el valor por defecto expone solo Grafana a la red. Prometheus, cAdvisor y Node Exporter quedan ligados a `127.0.0.1` salvo que cambies sus variables de bind address.
 
 ## Dashboard
 
-The included dashboard shows:
+El dashboard incluido muestra:
 
-- GB sent by Emby in the selected time range.
-- GB received by Emby in the selected time range.
-- Current Emby RAM usage.
-- Current Emby CPU usage in cores.
-- Clean network input/output rates.
+- GB enviados por Emby en el rango de tiempo seleccionado.
+- GB recibidos por Emby en el rango de tiempo seleccionado.
+- Uso actual de RAM de Emby.
+- Uso actual de CPU de Emby en cores.
+- Velocidad limpia de entrada y salida de red.
 
-The dashboard has a Grafana variable called `container_regex`.
+El dashboard tiene una variable de Grafana llamada `container_regex`.
 
-Default:
+Valor por defecto:
 
 ```text
 .*emby.*
 ```
 
-If your container has another name, change that variable from the dashboard.
+Si tu contenedor tiene otro nombre, cambia esa variable desde el dashboard sin editar todas las consultas PromQL.
 
-## Main Queries
+## Consultas Principales
 
-GB sent by Emby in the selected range:
+GB enviados por Emby en el rango seleccionado:
 
 ```promql
 sum(increase(container_network_transmit_bytes_total{name=~"$container_regex"}[$__range])) / 1024 / 1024 / 1024
 ```
 
-GB received by Emby in the selected range:
+GB recibidos por Emby en el rango seleccionado:
 
 ```promql
 sum(increase(container_network_receive_bytes_total{name=~"$container_regex"}[$__range])) / 1024 / 1024 / 1024
 ```
 
-Outgoing speed:
+Velocidad de salida:
 
 ```promql
 sum(rate(container_network_transmit_bytes_total{name=~"$container_regex"}[5m]))
 ```
 
-Incoming speed:
+Velocidad de entrada:
 
 ```promql
 sum(rate(container_network_receive_bytes_total{name=~"$container_regex"}[5m]))
@@ -134,24 +134,24 @@ RAM:
 sum(container_memory_usage_bytes{name=~"$container_regex"})
 ```
 
-CPU cores:
+CPU en cores:
 
 ```promql
 sum(rate(container_cpu_usage_seconds_total{name=~"$container_regex"}[5m]))
 ```
 
-## Troubleshooting
+## Solución de Problemas
 
-### Grafana permission denied
+### Grafana muestra permission denied
 
-Symptom:
+Síntoma:
 
 ```text
 GF_PATHS_DATA='/var/lib/grafana' is not writable
 mkdir: can't create directory '/var/lib/grafana/plugins': Permission denied
 ```
 
-Fix:
+Solución:
 
 ```bash
 cd /DATA/AppData/observatorio
@@ -160,16 +160,16 @@ sudo chmod -R 775 grafana
 docker compose restart grafana
 ```
 
-### Prometheus queries.active permission denied
+### Prometheus muestra queries.active permission denied
 
-Symptom:
+Síntoma:
 
 ```text
 open /prometheus/queries.active: permission denied
 panic: Unable to create mmap-ed active query log
 ```
 
-Fix:
+Solución:
 
 ```bash
 cd /DATA/AppData/observatorio
@@ -178,15 +178,15 @@ sudo chmod -R 775 prometheus
 docker compose restart prometheus
 ```
 
-### Port already in use
+### Un puerto ya está ocupado
 
-Change the relevant port in `.env`, then restart:
+Cambia el puerto correspondiente en `.env` y reinicia:
 
 ```bash
 docker compose up -d
 ```
 
-To inspect used ports on Linux:
+Para revisar puertos usados en Linux:
 
 ```bash
 sudo ss -tulpn | grep -E ':3000|:3001|:3030|:9090|:8085|:9100'
@@ -194,26 +194,26 @@ sudo ss -tulpn | grep -E ':3000|:3001|:3030|:9090|:8085|:9100'
 
 ## GitHub
 
-See [docs/github.md](docs/github.md).
+Consulta [docs/github.md](docs/github.md).
 
-## Future Modules
+## Próximos Módulos
 
-This project is intended to grow into a broader home observability stack. The next likely module is Home Assistant energy and device usage monitoring. See [docs/homeassistant-roadmap.md](docs/homeassistant-roadmap.md).
+Este proyecto está pensado para crecer como stack de observabilidad doméstica. El siguiente módulo natural es la monitorización de consumos y usos desde Home Assistant. Consulta [docs/homeassistant-roadmap.md](docs/homeassistant-roadmap.md).
 
-## Limits
+## Límites Actuales
 
-This stack currently measures container and host metrics:
+Este stack mide métricas del contenedor y del host:
 
-- Network traffic.
+- Tráfico de red.
 - CPU.
 - RAM.
-- Basic health.
+- Estado básico.
 
-It does not yet identify:
+Todavía no identifica:
 
-- Emby user.
-- Movie or episode title.
-- Historical playback by Emby user.
-- Home Assistant device usage.
+- Usuario de Emby.
+- Película o episodio reproducido.
+- Histórico de reproducciones por usuario de Emby.
+- Uso de dispositivos de Home Assistant.
 
-Those can be added later with Emby API, Emby logs and Home Assistant Prometheus metrics.
+Estas funciones se podrán añadir más adelante con la API de Emby, logs de Emby y métricas Prometheus de Home Assistant.
